@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35521.163
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WOWCAU", "WOWCAU\WOWCAU.csproj", "{07E40AC1-8F53-4555-A4E0-EBAF654F2466}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WOWCAU.Core", "WOWCAU.Core\WOWCAU.Core.csproj", "{EC571E18-3D25-450A-AF64-1EEDD103C43B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07E40AC1-8F53-4555-A4E0-EBAF654F2466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E40AC1-8F53-4555-A4E0-EBAF654F2466}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E40AC1-8F53-4555-A4E0-EBAF654F2466}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E40AC1-8F53-4555-A4E0-EBAF654F2466}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC571E18-3D25-450A-AF64-1EEDD103C43B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC571E18-3D25-450A-AF64-1EEDD103C43B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC571E18-3D25-450A-AF64-1EEDD103C43B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC571E18-3D25-450A-AF64-1EEDD103C43B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {47E414EB-2A90-48C4-AF80-A2A004767562}
+	EndGlobalSection
+EndGlobal
