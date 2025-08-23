@@ -1,5 +1,5 @@
 # WOWCAU
-My most recent World of Warcraft Curseforge addons updater
+My most recent World of Warcraft Curseforge addon updater
 
 ### What is WOWCAU?
 - It's a simple World of Warcraft addon updater for CurseForge addons
