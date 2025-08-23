@@ -10,6 +10,6 @@ My most recent WoW Curseforge addons updater
 
 #### Under construction
 
-Work in progress...
+`Work in progress...`
 
 #### Have fun.
