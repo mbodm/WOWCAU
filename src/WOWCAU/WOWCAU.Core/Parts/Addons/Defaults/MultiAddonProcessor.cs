@@ -28,29 +28,24 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
             var addonNames = addonUrls.Select(curseHelper.GetAddonSlugNameFromAddonPageUrl);
 
-            // Prepare progress dictionary
+            // Get download URLs
+
+            var downloadUrlsDict = await GetDownloadUrlsFromWebScraperAsync(cancellationToken).ConfigureAwait(false);
+            var foundAll = addonNames.All(downloadUrlsDict.ContainsKey);
+            if (!foundAll)
+            {
+                throw new InvalidOperationException("Received valid response from Deno WOWCAM scraper API, but response not contained all requested addons.");
+            }
+
+            // Prepare concurrent dictionaries
 
             progressData.Clear();
+            downloadData.Clear();
             foreach (var addonName in addonNames)
             {
                 progressData.TryAdd(addonName, 0);
-            }
-
-            // Get download URLs
-
-            var dict = await GetDownloadUrlsFromWebScraperAsync(cancellationToken).ConfigureAwait(false);
-            var foundAll = addonNames.All(dict.ContainsKey);
-            if (!foundAll)
-            {
-                throw new InvalidOperationException("Received valid response from Deno WOWCAU scraper API, but response not includes every requested addon.");
-            }
-
-            // Prepare download dictionary
-
-            downloadData.Clear();
-            foreach (var kvp in dict)
-            {
-                downloadData.TryAdd(kvp.Key, kvp.Value);
+                var downloadUrl = downloadUrlsDict[addonName];
+                downloadData.TryAdd(addonName, downloadUrl);
             }
 
             // Concurrently do for every addon "download -> unzip" (download part may be skipped/faked internally by SmartUpdate)
