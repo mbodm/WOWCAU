@@ -13,7 +13,7 @@ namespace WOWCAU
         private static readonly Mutex mutex = new(true, "{0b2db15f-f1b9-47d4-b265-20b19ddf79cd}");
 
         // Register a specific custom window message
-        private static readonly uint WM_MBODM_WOWCAM_SHOW = WinApi.RegisterWindowMessageW("WM_MBODM_WOWCAM_SHOW");
+        private static readonly uint WM_MBODM_WOWCAU_SHOW = WinApi.RegisterWindowMessageW("WM_MBODM_WOWCAU_SHOW");
 
         public static bool AnotherInstanceIsAlreadyRunning
         {
@@ -40,7 +40,7 @@ namespace WOWCAU
 
             hwndSource.AddHook(new HwndSourceHook((IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) =>
             {
-                if (msg == WM_MBODM_WOWCAM_SHOW)
+                if (msg == WM_MBODM_WOWCAU_SHOW)
                 {
                     handled = true;
 
@@ -64,7 +64,7 @@ namespace WOWCAU
 
             const int HWND_BROADCAST = 0xFFFF;
 
-            WinApi.PostMessageW(HWND_BROADCAST, WM_MBODM_WOWCAM_SHOW, IntPtr.Zero, IntPtr.Zero);
+            WinApi.PostMessageW(HWND_BROADCAST, WM_MBODM_WOWCAU_SHOW, IntPtr.Zero, IntPtr.Zero);
         }
     }
 }

@@ -1,25 +1,21 @@
 ﻿using System.Windows;
-using WOWCAU.Core.Parts.Domain.Contracts;
+using WOWCAU.Core.Parts;
 
 namespace WOWCAU
 {
     public partial class MainWindow : Window
     {
-        private readonly IAppModule appModule;
-        private readonly IUpdateModule updateModule;
-        private readonly IAddonsModule addonsModule;
+        private readonly IDomainLogic domainLogic;
 
-        public MainWindow(IAppModule appModule, IUpdateModule updateModule, IAddonsModule addonsModule)
+        public MainWindow(IDomainLogic domainLogic)
         {
-            this.appModule = appModule ?? throw new ArgumentNullException(nameof(appModule));
-            this.updateModule = updateModule ?? throw new ArgumentNullException(nameof(updateModule));
-            this.addonsModule = addonsModule ?? throw new ArgumentNullException(nameof(addonsModule));
+            this.domainLogic = domainLogic ?? throw new ArgumentNullException(nameof(domainLogic));
 
             InitializeComponent();
 
             MinWidth = Width;
             MinHeight = Height;
-            Title = $"WOWCAM {appModule.GetApplicationVersion()}";
+            Title = $"WOWCAU {domainLogic.App.GetApplicationVersion()}";
 
             textBlockConfigFolder.Visibility = Visibility.Hidden;
             textBlockCheckUpdates.Visibility = Visibility.Hidden;

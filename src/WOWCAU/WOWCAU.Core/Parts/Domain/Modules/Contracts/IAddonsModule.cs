@@ -1,4 +1,4 @@
-﻿namespace WOWCAU.Core.Parts.Public.Contracts
+﻿namespace WOWCAU.Core.Parts.Domain.Modules.Contracts
 {
     public interface IAddonsModule
     {

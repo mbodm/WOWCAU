@@ -1,5 +1,4 @@
-﻿using WOWCAU.Core.Parts.Config.Types;
-using WOWCAU.Core.Parts.Domain.Config.Contracts;
+﻿using WOWCAU.Core.Parts.Domain.Config.Contracts;
 using WOWCAU.Core.Parts.Domain.Config.Types;
 using WOWCAU.Core.Parts.Domain.Logging.Contracts;
 using WOWCAU.Core.Parts.Helper.Contracts;

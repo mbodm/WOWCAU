@@ -40,9 +40,9 @@ namespace WOWCAU.Core.Parts.Domain.Config.Defaults
         {
             var root = doc.Root;
 
-            if (root == null || root.Name != "wowcam")
+            if (root == null || root.Name != "wowcau")
             {
-                throw new InvalidOperationException("Error in config file: The <wowcam> root element not exists.");
+                throw new InvalidOperationException("Error in config file: The <wowcau> root element not exists.");
             }
 
             if (root.Element("general") == null)

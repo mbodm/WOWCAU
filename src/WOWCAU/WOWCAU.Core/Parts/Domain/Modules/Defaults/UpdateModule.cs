@@ -1,11 +1,11 @@
 ﻿using WOWCAU.Core.Parts.Domain.Logging.Contracts;
+using WOWCAU.Core.Parts.Domain.Modules.Contracts;
 using WOWCAU.Core.Parts.Domain.Update.Contracts;
 using WOWCAU.Core.Parts.Domain.Update.Types;
 using WOWCAU.Core.Parts.Helper.Contracts;
 using WOWCAU.Core.Parts.Helper.Types;
-using WOWCAU.Core.Parts.Public.Contracts;
 
-namespace WOWCAU.Core.Parts.Public.Defaults
+namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
 {
     public sealed class UpdateModule(ILogger logger, IAppHelper appHelper, IAppModule settingsModule, IUpdateManager updateManager) : IUpdateModule
     {

@@ -45,7 +45,9 @@ namespace WOWCAU.Core.Parts.Domain.Addons.Defaults
             {
                 // Download zip file
 
-                await downloadHelper.DownloadFileAsync(downloadUrl, downloadFolder, new Progress<DownloadProgress>(p =>
+                var filePath = Path.Combine(downloadFolder, zipFile);
+
+                await downloadHelper.DownloadFileAsync(downloadUrl, filePath, new Progress<DownloadProgress>(p =>
                 {
                     var percent = CalcDownloadPercent(p.ReceivedBytes, p.TotalBytes);
                     progress?.Report(new AddonProgress(AddonState.DownloadProgress, addonName, percent));

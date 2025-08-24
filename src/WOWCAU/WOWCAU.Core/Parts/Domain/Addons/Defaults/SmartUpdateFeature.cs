@@ -77,7 +77,7 @@ namespace WOWCAU.Core.Parts.Domain.Addons.Defaults
                 throw new InvalidOperationException("Error while loading SmartUpdate file: The file is either empty or not a valid XML file.", e);
             }
 
-            var root = doc.Element("wowcam") ?? throw new InvalidOperationException("Error in SmartUpdate file: The <wowcam> root element not exists.");
+            var root = doc.Element("wowcau") ?? throw new InvalidOperationException("Error in SmartUpdate file: The <wowcau> root element not exists.");
             var parent = root.Element("smartupdate") ?? throw new InvalidOperationException("Error in SmartUpdate file: The <smartupdate> section not exists.");
 
             var entries = parent.Elements("entry");
@@ -123,7 +123,7 @@ namespace WOWCAU.Core.Parts.Domain.Addons.Defaults
                 new XAttribute("previousZipFile", kvp.Value.ZipFile),
                 new XAttribute("changedAt", kvp.Value.TimeStamp)));
 
-            var doc = new XDocument(new XElement("wowcam", new XElement("smartupdate", entries)));
+            var doc = new XDocument(new XElement("wowcau", new XElement("smartupdate", entries)));
 
             using var fileStream = new FileStream(xmlFile, FileMode.Create, FileAccess.Write, FileShare.Read);
             using var xmlWriter = XmlWriter.Create(fileStream, new XmlWriterSettings { Indent = true, IndentChars = "\t", NewLineOnAttributes = true, Async = true });

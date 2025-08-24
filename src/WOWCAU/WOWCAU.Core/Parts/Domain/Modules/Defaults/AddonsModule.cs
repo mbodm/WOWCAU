@@ -1,21 +1,21 @@
 ﻿using WOWCAU.Core.Parts.Domain.Addons.Contracts;
 using WOWCAU.Core.Parts.Domain.Logging.Contracts;
+using WOWCAU.Core.Parts.Domain.Modules.Contracts;
 using WOWCAU.Core.Parts.Domain.System.Contracts;
 using WOWCAU.Core.Parts.Helper.Contracts;
-using WOWCAU.Core.Parts.Public.Contracts;
 
-namespace WOWCAU.Core.Parts.Public.Defaults
+namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
 {
     public sealed class AddonsModule(
         ILogger logger,
-        IAppModule settingsModule,
+        IAppModule appModule,
         ISmartUpdateFeature smartUpdateFeature,
         IMultiAddonProcessor multiAddonProcessor,
         IFileSystemHelper fileSystemHelper,
         IReliableFileOperations reliableFileOperations) : IAddonsModule
     {
         private readonly ILogger logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IAppModule settingsModule = settingsModule ?? throw new ArgumentNullException(nameof(settingsModule));
+        private readonly IAppModule appModule = appModule ?? throw new ArgumentNullException(nameof(appModule));
         private readonly ISmartUpdateFeature smartUpdateFeature = smartUpdateFeature ?? throw new ArgumentNullException(nameof(smartUpdateFeature));
         private readonly IMultiAddonProcessor multiAddonProcessor = multiAddonProcessor ?? throw new ArgumentNullException(nameof(multiAddonProcessor));
         private readonly IFileSystemHelper fileSystemHelper = fileSystemHelper ?? throw new ArgumentNullException(nameof(fileSystemHelper));
@@ -29,10 +29,10 @@ namespace WOWCAU.Core.Parts.Public.Defaults
 
             // Prepare folders
 
-            var smartUpdateFolder = Path.Combine(settingsModule.Settings.WorkFolder, "SmartUpdate");
-            var downloadFolder = Path.Combine(settingsModule.Settings.TempFolder, "Curse-Download");
-            var unzipFolder = Path.Combine(settingsModule.Settings.TempFolder, "Curse-Unzip");
-            var targetFolder = settingsModule.Settings.AddonTargetFolder;
+            var smartUpdateFolder = Path.Combine(appModule.Settings.WorkFolder, "SmartUpdate");
+            var downloadFolder = Path.Combine(appModule.Settings.TempFolder, "Curse-Download");
+            var unzipFolder = Path.Combine(appModule.Settings.TempFolder, "Curse-Unzip");
+            var targetFolder = appModule.Settings.AddonTargetFolder;
 
             await PrepareFoldersAsync(downloadFolder, unzipFolder, targetFolder, cancellationToken);
 
@@ -47,7 +47,7 @@ namespace WOWCAU.Core.Parts.Public.Defaults
             uint countOfUpdatedAddons;
             try
             {
-                countOfUpdatedAddons = await multiAddonProcessor.ProcessAddonsAsync(settingsModule.Settings.AddonUrls, downloadFolder, unzipFolder, progress, cancellationToken);
+                countOfUpdatedAddons = await multiAddonProcessor.ProcessAddonsAsync(appModule.Settings.AddonUrls, downloadFolder, unzipFolder, progress, cancellationToken);
             }
             catch (Exception e)
             {

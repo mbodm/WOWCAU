@@ -9,7 +9,7 @@ namespace WOWCAU.Core.Parts.Domain.Config.Defaults
         private readonly ILogger logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly IReliableFileOperations reliableFileOperations = reliableFileOperations ?? throw new ArgumentNullException(nameof(reliableFileOperations));
 
-        private readonly string xmlFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MBODM", "WOWCAM.xml");
+        private readonly string xmlFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MBODM", "WOWCAU.xml");
 
         public string StorageInformation => xmlFile;
         public bool StorageExists => File.Exists(xmlFile);
@@ -21,9 +21,9 @@ namespace WOWCAU.Core.Parts.Domain.Config.Defaults
             var s = """
                 <?xml version="1.0" encoding="utf-8"?>
                 <!-- ===================================================================== -->
-                <!-- Please have a look at https://github.com/mbodm/wowcam for file format -->
+                <!-- Please have a look at https://github.com/mbodm/wowcau for file format -->
                 <!-- ===================================================================== -->
-                <wowcam>
+                <wowcau>
                 	<general>
                 		<profile>retail</profile>
                 		<theme>system</theme>
@@ -43,7 +43,7 @@ namespace WOWCAU.Core.Parts.Domain.Config.Defaults
                 			</addons>
                 		</retail>
                 	</profiles>
-                </wowcam>
+                </wowcau>
                 """;
 
             s += Environment.NewLine;

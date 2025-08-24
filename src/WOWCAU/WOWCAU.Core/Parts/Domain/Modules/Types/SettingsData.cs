@@ -1,4 +1,4 @@
-﻿namespace WOWCAU.Core.Parts.Public.Types
+﻿namespace WOWCAU.Core.Parts.Domain.Modules.Types
 {
     public sealed record SettingsData(
         string WorkFolder,

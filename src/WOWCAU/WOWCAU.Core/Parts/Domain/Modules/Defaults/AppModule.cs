@@ -2,21 +2,22 @@
 using WOWCAU.Core.Parts.Domain.Config.Contracts;
 using WOWCAU.Core.Parts.Domain.Config.Types;
 using WOWCAU.Core.Parts.Domain.Logging.Contracts;
+using WOWCAU.Core.Parts.Domain.Modules.Contracts;
+using WOWCAU.Core.Parts.Domain.Modules.Types;
 using WOWCAU.Core.Parts.Helper.Contracts;
-using WOWCAU.Core.Parts.Public.Contracts;
-using WOWCAU.Core.Parts.Public.Types;
 
-namespace WOWCAU.Core.Parts.Public.Defaults
+namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
 {
-    public sealed class AppModule(ILogger logger, IAppHelper appHelper, IConfigStorage configStorage, IConfigReader configReader, IConfigValidator configValidator) : IAppModule
+    public sealed class AppModule(
+        ILogger logger, IAppHelper appHelper, IPluralizeHelper pluralizeHelper, IConfigStorage configStorage, IConfigReader configReader, IConfigValidator configValidator) : IAppModule
     {
         private readonly ILogger logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly IAppHelper appHelper = appHelper ?? throw new ArgumentNullException(nameof(appHelper));
+        private readonly IPluralizeHelper pluralizeHelper = pluralizeHelper ?? throw new ArgumentNullException(nameof(pluralizeHelper));
         private readonly IConfigStorage configStorage = configStorage ?? throw new ArgumentNullException(nameof(configStorage));
         private readonly IConfigReader configReader = configReader ?? throw new ArgumentNullException(nameof(configReader));
         private readonly IConfigValidator configValidator = configValidator ?? throw new ArgumentNullException(nameof(AppModule.configValidator));
 
-        public ILogger Logger => logger;
         public string LogFile => Path.Combine(appHelper.GetApplicationExecutableFolder(), $"{appHelper.GetApplicationName()}.log");
         public SettingsData Settings { get; private set; } = SettingsData.Empty();
         public string ConfigStorageInformation => configStorage.StorageInformation;
@@ -91,21 +92,45 @@ namespace WOWCAU.Core.Parts.Public.Defaults
             return appHelper.GetApplicationVersion();
         }
 
-        public void OpenFolderInExplorer(string folder)
+        public void OpenProgramFolderInExplorer()
         {
-            if (string.IsNullOrWhiteSpace(folder))
-            {
-                throw new ArgumentException($"'{nameof(folder)}' cannot be null or whitespace.", nameof(folder));
-            }
-
             try
             {
+                var folder = appHelper.GetApplicationExecutableFolder();
                 Process.Start("explorer", folder);
             }
             catch (Exception e)
             {
                 logger.Log(e);
-                throw new InvalidOperationException("Could not start Explorer.exe process to open folder (see log file for details).", e);
+                throw new InvalidOperationException("Could not start Explorer.exe process to open program folder (see log file for details).", e);
+            }
+        }
+
+        public void OpenAddonsFolderInExplorer()
+        {
+            try
+            {
+                var folder = Settings.AddonTargetFolder;
+                Process.Start("explorer", folder);
+            }
+            catch (Exception e)
+            {
+                logger.Log(e);
+                throw new InvalidOperationException("Could not start Explorer.exe process to open addons folder (see log file for details).", e);
+            }
+        }
+
+        public void OpenConfigFolderInExplorer()
+        {
+            try
+            {
+                var folder = Path.GetDirectoryName(ConfigStorageInformation) ?? throw new InvalidOperationException("Could not get directory name from config storage information.");
+                Process.Start("explorer", folder);
+            }
+            catch (Exception e)
+            {
+                logger.Log(e);
+                throw new InvalidOperationException("Could not start Explorer.exe process to open config folder (see log file for details).", e);
             }
         }
 
@@ -120,6 +145,11 @@ namespace WOWCAU.Core.Parts.Public.Defaults
                 logger.Log(e);
                 throw new InvalidOperationException("Could not start Notepad.exe process to show log file (see log file for details).", e);
             }
+        }
+
+        public string PluralizeAddonWord(uint count)
+        {
+            return pluralizeHelper.PluralizeWord("addon", () => count != 1);
         }
     }
 }

@@ -44,7 +44,7 @@ namespace WOWCAU.Core.Parts.Domain.Update.Defaults
         public async Task<UpdateData> CheckForUpdateAsync(CancellationToken cancellationToken = default)
         {
             var installedVersion = GetInstalledVersion();
-            var latestReleaseData = await gitHubHelper.GetLatestReleaseDataAsync("mbodm", "wowcam", cancellationToken).ConfigureAwait(false);
+            var latestReleaseData = await gitHubHelper.GetLatestReleaseDataAsync("mbodm", "wowcau", cancellationToken).ConfigureAwait(false);
             var updateAvailable = installedVersion < latestReleaseData.Version;
 
             return new UpdateData(installedVersion, latestReleaseData.Version, updateAvailable, latestReleaseData.DownloadUrl, latestReleaseData.FileName);

@@ -95,7 +95,7 @@ namespace WOWCAU.Core.Parts.Domain.Addons.Defaults
 
         private async Task<Dictionary<string, string>> GetDownloadUrlsFromWebScraperAsync(CancellationToken cancellationToken = default)
         {
-            var url = "https://mbodm-wowcam.deno.dev?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
+            var url = "https://mbodm-wowcam.deno.dev/get?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
             using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -105,7 +105,7 @@ namespace WOWCAU.Core.Parts.Domain.Addons.Defaults
             }
 
             var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
-            if (contentType != "application/json")
+            if (contentType.ToLower() != "application/json")
             {
                 throw new InvalidOperationException("Received invalid response content type from Deno WOWCAU scraper API.");
             }

@@ -2,9 +2,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        x:Class="WOWCAM.MainWindow"
+        x:Class="WOWCAU.MainWindow"
         mc:Ignorable="d"
-        Title="WOWCAM" Width="480" Height="150" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Loaded="Window_Loaded">
+        Title="WOWCAU" Width="480" Height="150" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Loaded="Window_Loaded">
     <Window.Resources>
         <ContextMenu x:Key="keyContextMenu" />
     </Window.Resources>
