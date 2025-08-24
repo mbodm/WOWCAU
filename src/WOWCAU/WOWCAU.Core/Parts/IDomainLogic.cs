@@ -1,5 +1,5 @@
-﻿using WOWCAU.Core.Parts.Domain.Logging.Contracts;
-using WOWCAU.Core.Parts.Domain.Modules.Contracts;
+﻿using WOWCAU.Core.Parts.Logging.Contracts;
+using WOWCAU.Core.Parts.Modules.Contracts;
 
 namespace WOWCAU.Core.Parts
 {

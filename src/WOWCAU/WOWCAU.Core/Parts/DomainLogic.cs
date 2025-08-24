@@ -1,12 +1,12 @@
-﻿using WOWCAU.Core.Parts.Domain.Addons.Defaults;
-using WOWCAU.Core.Parts.Domain.Config.Defaults;
-using WOWCAU.Core.Parts.Domain.Logging.Contracts;
-using WOWCAU.Core.Parts.Domain.Logging.Defaults;
-using WOWCAU.Core.Parts.Domain.Modules.Contracts;
-using WOWCAU.Core.Parts.Domain.Modules.Defaults;
-using WOWCAU.Core.Parts.Domain.System.Defaults;
-using WOWCAU.Core.Parts.Domain.Update.Defaults;
-using WOWCAU.Core.Parts.Helper.Contracts;
+﻿using WOWCAU.Core.Parts.Addons.Defaults;
+using WOWCAU.Core.Parts.Config.Defaults;
+using WOWCAU.Core.Parts.Logging.Contracts;
+using WOWCAU.Core.Parts.Logging.Defaults;
+using WOWCAU.Core.Parts.Modules.Contracts;
+using WOWCAU.Core.Parts.Modules.Defaults;
+using WOWCAU.Core.Parts.System.Defaults;
+using WOWCAU.Core.Parts.Update.Defaults;
+using WOWCAU.Helper.Parts.Contracts;
 
 namespace WOWCAU.Core.Parts
 {
