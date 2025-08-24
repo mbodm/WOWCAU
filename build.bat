@@ -17,7 +17,7 @@ dotnet clean -v quiet && dotnet build --no-incremental -c Release -v quiet && do
 cd "%CURRENT_FOLDER%"
 if not exist "%RELEASE_FOLDER%" mkdir "%RELEASE_FOLDER%"
 copy /B /V /Y "%PUBLISH_FOLDER%\WOWCAU.exe" "%RELEASE_FOLDER%" >NUL
-copy /B /V /Y "%CURRENT_FOLDER%\installer\Install.bat" "%RELEASE_FOLDER%" >NUL
+copy /B /V /Y "%CURRENT_FOLDER%\src\Installer\Install.bat" "%RELEASE_FOLDER%" >NUL
 
 echo Finished (you can now deploy everything inside 'release' folder)
 echo.

@@ -5,8 +5,8 @@ set INSTALL_FOLDER=%LocalAppData%\Programs\WOWCAU
 
 cls
 echo. && echo WOWCAU Install 1.0.2 (by MBODM 08/2025) && echo.
-echo - This batch script just copies the executable file to user's local programs directory
-echo - This batch script does nothing else (therefore 'Install' is somewhat misleading here)
+echo - This batch script just copies the executable file to the user's local programs directory
+echo - This batch script does nothing else (therefore 'Install.bat' is somewhat misleading here)
 echo.
 
 echo Copy...
