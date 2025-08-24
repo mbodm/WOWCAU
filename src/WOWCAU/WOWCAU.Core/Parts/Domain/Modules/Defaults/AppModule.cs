@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics;
 using WOWCAU.Core.Parts.Config.Contracts;
 using WOWCAU.Core.Parts.Config.Types;
+using WOWCAU.Core.Parts.Domain.Modules.Contracts;
+using WOWCAU.Core.Parts.Domain.Modules.Types;
 using WOWCAU.Core.Parts.Logging.Contracts;
-using WOWCAU.Core.Parts.Modules.Contracts;
-using WOWCAU.Core.Parts.Modules.Types;
 using WOWCAU.Helper.Parts.Contracts;
 
-namespace WOWCAU.Core.Parts.Modules.Defaults
+namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
 {
     public sealed class AppModule(
         ILogger logger, IAppHelper appHelper, IPluralizeHelper pluralizeHelper, IConfigStorage configStorage, IConfigReader configReader, IConfigValidator configValidator) : IAppModule

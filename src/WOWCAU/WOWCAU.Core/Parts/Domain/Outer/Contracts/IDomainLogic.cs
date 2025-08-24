@@ -1,7 +1,7 @@
-﻿using WOWCAU.Core.Parts.Logging.Contracts;
-using WOWCAU.Core.Parts.Modules.Contracts;
+﻿using WOWCAU.Core.Parts.Domain.Modules.Contracts;
+using WOWCAU.Core.Parts.Logging.Contracts;
 
-namespace WOWCAU.Core.Parts
+namespace WOWCAU.Core.Parts.Domain.Outer.Contracts
 {
     public interface IDomainLogic
     {

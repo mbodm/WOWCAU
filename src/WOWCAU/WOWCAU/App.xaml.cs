@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Windows;
-using WOWCAU.Core.Parts;
-using WOWCAU.Core.Parts.Helper.Defaults;
+using WOWCAU.Core.Parts.Domain.Outer.Defaults;
+using WOWCAU.Helper.Parts.Defaults;
 
 namespace WOWCAU
 {

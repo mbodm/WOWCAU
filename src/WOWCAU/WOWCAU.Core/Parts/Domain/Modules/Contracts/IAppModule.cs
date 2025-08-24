@@ -1,6 +1,6 @@
-﻿using WOWCAU.Core.Parts.Modules.Types;
+﻿using WOWCAU.Core.Parts.Domain.Modules.Types;
 
-namespace WOWCAU.Core.Parts.Modules.Contracts
+namespace WOWCAU.Core.Parts.Domain.Modules.Contracts
 {
     public interface IAppModule
     {

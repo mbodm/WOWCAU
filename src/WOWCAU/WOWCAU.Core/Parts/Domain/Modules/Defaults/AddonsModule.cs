@@ -1,10 +1,10 @@
 ﻿using WOWCAU.Core.Parts.Addons.Contracts;
+using WOWCAU.Core.Parts.Domain.Modules.Contracts;
 using WOWCAU.Core.Parts.Logging.Contracts;
-using WOWCAU.Core.Parts.Modules.Contracts;
 using WOWCAU.Core.Parts.System.Contracts;
 using WOWCAU.Helper.Parts.Contracts;
 
-namespace WOWCAU.Core.Parts.Modules.Defaults
+namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
 {
     public sealed class AddonsModule(
         ILogger logger,

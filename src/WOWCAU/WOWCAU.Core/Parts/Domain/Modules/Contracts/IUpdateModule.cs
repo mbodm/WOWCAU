@@ -1,7 +1,7 @@
 ﻿using WOWCAU.Core.Parts.Update.Types;
 using WOWCAU.Helper.Parts.Types;
 
-namespace WOWCAU.Core.Parts.Modules.Contracts
+namespace WOWCAU.Core.Parts.Domain.Modules.Contracts
 {
     public interface IUpdateModule
     {

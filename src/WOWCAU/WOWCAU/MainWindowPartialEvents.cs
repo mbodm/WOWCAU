@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using WOWCAU.Core.Parts.Helper.Types;
+using WOWCAU.Helper.Parts.Types;
 
 namespace WOWCAU
 {

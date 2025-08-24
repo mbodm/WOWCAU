@@ -1,14 +1,15 @@
 ﻿using WOWCAU.Core.Parts.Addons.Defaults;
 using WOWCAU.Core.Parts.Config.Defaults;
+using WOWCAU.Core.Parts.Domain.Modules.Contracts;
+using WOWCAU.Core.Parts.Domain.Modules.Defaults;
+using WOWCAU.Core.Parts.Domain.Outer.Contracts;
 using WOWCAU.Core.Parts.Logging.Contracts;
 using WOWCAU.Core.Parts.Logging.Defaults;
-using WOWCAU.Core.Parts.Modules.Contracts;
-using WOWCAU.Core.Parts.Modules.Defaults;
 using WOWCAU.Core.Parts.System.Defaults;
 using WOWCAU.Core.Parts.Update.Defaults;
 using WOWCAU.Helper.Parts.Contracts;
 
-namespace WOWCAU.Core.Parts
+namespace WOWCAU.Core.Parts.Domain.Outer.Defaults
 {
     public sealed class DomainLogic : IDomainLogic
     {

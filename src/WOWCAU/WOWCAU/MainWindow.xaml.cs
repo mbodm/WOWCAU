@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using WOWCAU.Core.Parts;
+using WOWCAU.Core.Parts.Domain.Outer.Contracts;
 
 namespace WOWCAU
 {
