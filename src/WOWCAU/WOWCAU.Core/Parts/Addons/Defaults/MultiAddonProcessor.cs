@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Text.Json;
 using WOWCAU.Core.Parts.Addons.Contracts;
 using WOWCAU.Core.Parts.Addons.Types;
 using WOWCAU.Core.Parts.Logging.Contracts;
@@ -7,12 +6,13 @@ using WOWCAU.Helper.Parts.Contracts;
 
 namespace WOWCAU.Core.Parts.Addons.Defaults
 {
-    public sealed class MultiAddonProcessor(ILogger logger, ICurseHelper curseHelper, ISingleAddonProcessor singleAddonProcessor, HttpClient httpClient) : IMultiAddonProcessor
+    public sealed class MultiAddonProcessor(
+        ILogger logger, ICurseHelper curseHelper, IScraperApiClient scraperApiClient, ISingleAddonProcessor singleAddonProcessor) : IMultiAddonProcessor
     {
         private readonly ILogger logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly ICurseHelper curseHelper = curseHelper ?? throw new ArgumentNullException(nameof(curseHelper));
+        private readonly IScraperApiClient scraperApiClient = scraperApiClient ?? throw new ArgumentNullException(nameof(scraperApiClient));
         private readonly ISingleAddonProcessor singleAddonProcessor = singleAddonProcessor ?? throw new ArgumentNullException(nameof(singleAddonProcessor));
-        private readonly HttpClient httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
         private readonly ConcurrentDictionary<string, uint> progressData = new();
         private readonly ConcurrentDictionary<string, string> downloadData = new();
@@ -30,12 +30,14 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
             // Get download URLs
 
-            var downloadUrlsDict = await GetDownloadUrlsFromWebScraperAsync(cancellationToken).ConfigureAwait(false);
-            var foundAll = addonNames.All(downloadUrlsDict.ContainsKey);
-            if (!foundAll)
+            var hasAll = await scraperApiClient.HasDownloadUrlsOnWebScraperApiAsync(addonNames, cancellationToken).ConfigureAwait(false);
+            if (!hasAll)
             {
-                throw new InvalidOperationException("Received valid response from Deno WOWCAM scraper API, but response not contained all requested addons.");
+                await scraperApiClient.AddAddonsToWebScrapeApiAsync(addonNames, cancellationToken).ConfigureAwait(false);
+                await scraperApiClient.ScrapeAddonsWithWebScrapeApiAsync(addonNames, cancellationToken).ConfigureAwait(false);
             }
+
+            var downloadUrlsDict = await scraperApiClient.GetDownloadUrlsFromWebScraperApiAsync(addonNames, cancellationToken).ConfigureAwait(false);
 
             // Prepare concurrent dictionaries
 
@@ -81,61 +83,11 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
                 return singleAddonProcessor.ProcessAddonAsync(addonName, downloadUrl, downloadFolder, unzipFolder, addonProgress, cancellationToken);
             });
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             logger.LogMethodExit();
 
             return updatedAddonsCounter;
-        }
-
-        private async Task<Dictionary<string, string>> GetDownloadUrlsFromWebScraperAsync(CancellationToken cancellationToken = default)
-        {
-            var url = "https://mbodm-wowcam.deno.dev/get?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
-            using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var prettyStatusCode = $"HTTP {(int)response.StatusCode} ({response.StatusCode})";
-                throw new InvalidOperationException($"Received {prettyStatusCode} response error from Deno WOWCAU scraper API.");
-            }
-
-            var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
-            if (contentType.ToLower() != "application/json")
-            {
-                throw new InvalidOperationException("Received invalid response content type from Deno WOWCAU scraper API.");
-            }
-
-            var contentLength = response.Content.Headers.ContentLength ?? 0;
-            if (contentLength <= 0)
-            {
-                throw new InvalidOperationException("Received empty response content from Deno WOWCAU scraper API.");
-            }
-
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                var dict = new Dictionary<string, string>();
-
-                using var doc = JsonDocument.Parse(content);
-
-                foreach (var element in doc.RootElement.GetProperty("addons").EnumerateArray())
-                {
-                    var addonSlug = element.GetProperty("addonSlug").GetString() ??
-                        throw new InvalidOperationException("Could not get 'addonSlug' property value of JSON array element.");
-                    var downloadUrl = element.GetProperty("downloadUrlFinal").GetString() ??
-                        throw new InvalidOperationException("Could not get 'downloadUrlFinal' property value of JSON array element.");
-
-                    dict.Add(addonSlug, downloadUrl);
-                }
-
-                return dict;
-            }
-            catch (Exception e)
-            {
-                logger.Log(e);
-                throw new InvalidOperationException("Received invalid JSON response content from Deno WOWCAU scraper API.");
-            }
         }
 
         private byte CalcTotalPercent()

@@ -23,10 +23,6 @@ namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
 
         public async Task<uint> ProcessAddonsAsync(IProgress<byte>? progress = null, CancellationToken cancellationToken = default)
         {
-            // No ".ConfigureAwait(false)" here, cause otherwise the wrapped WebView's scheduler is not the correct one.
-            // In general, the Microsoft WebView2 has to use the UI thread scheduler as its scheduler, to work properly.
-            // Remember: This is also true for "ContinueWith()" blocks aka "code after await", even when it is a helper.
-
             // Prepare folders
 
             var smartUpdateFolder = Path.Combine(appModule.Settings.WorkFolder, "SmartUpdate");
@@ -34,20 +30,21 @@ namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
             var unzipFolder = Path.Combine(appModule.Settings.TempFolder, "Curse-Unzip");
             var targetFolder = appModule.Settings.AddonTargetFolder;
 
-            await PrepareFoldersAsync(downloadFolder, unzipFolder, targetFolder, cancellationToken);
+            await PrepareFoldersAsync(downloadFolder, unzipFolder, targetFolder, cancellationToken).ConfigureAwait(false);
 
             // Prepare SmartUpdate
 
-            await smartUpdateFeature.InitAsync(smartUpdateFolder, downloadFolder, cancellationToken);
+            await smartUpdateFeature.InitAsync(smartUpdateFolder, downloadFolder, cancellationToken).ConfigureAwait(false);
 
             // Process addons
 
-            await SmartUpdateLoadAsync(cancellationToken);
+            await SmartUpdateLoadAsync(cancellationToken).ConfigureAwait(false);
 
             uint countOfUpdatedAddons;
             try
             {
-                countOfUpdatedAddons = await multiAddonProcessor.ProcessAddonsAsync(appModule.Settings.AddonUrls, downloadFolder, unzipFolder, progress, cancellationToken);
+                countOfUpdatedAddons = await multiAddonProcessor.ProcessAddonsAsync(appModule.Settings.AddonUrls, downloadFolder, unzipFolder,
+                    progress, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -56,10 +53,10 @@ namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
                 throw new InvalidOperationException("An error occurred while processing the addons (see log file for details).");
             }
 
-            await SmartUpdateSaveAsync(cancellationToken);
+            await SmartUpdateSaveAsync(cancellationToken).ConfigureAwait(false);
 
-            await MoveContentAsync(unzipFolder, targetFolder, cancellationToken);
-            await CleanUpAsync(downloadFolder, unzipFolder, cancellationToken);
+            await MoveContentAsync(unzipFolder, targetFolder, cancellationToken).ConfigureAwait(false);
+            await CleanUpAsync(downloadFolder, unzipFolder, cancellationToken).ConfigureAwait(false);
 
             return countOfUpdatedAddons;
         }

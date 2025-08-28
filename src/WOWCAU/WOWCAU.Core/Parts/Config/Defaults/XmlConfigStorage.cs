@@ -31,7 +31,7 @@ namespace WOWCAU.Core.Parts.Config.Defaults
                 	</general>
                 	<options>
                 		<autoupdate>false</autoupdate>
-                		<silentmode>false</silentmode>
+                		<webtoken>12345</webtoken>
                 	</options>
                 	<profiles>
                 		<retail>
@@ -39,7 +39,7 @@ namespace WOWCAU.Core.Parts.Config.Defaults
                 			<addons>
                 				<url>https://www.curseforge.com/wow/addons/deadly-boss-mods</url>
                 				<url>https://www.curseforge.com/wow/addons/details</url>
-                				<url>https://www.curseforge.com/wow/addons/weakauras-2</url>
+                				<url>https://www.curseforge.com/wow/addons/raiderio</url>
                 			</addons>
                 		</retail>
                 	</profiles>

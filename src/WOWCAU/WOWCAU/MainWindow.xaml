@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         x:Class="WOWCAU.MainWindow"
         mc:Ignorable="d"
-        Title="WOWCAU" Width="480" Height="150" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Loaded="Window_Loaded">
+        Title="WOWCAU" Width="480" Height="150" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded">
     <Window.Resources>
         <ContextMenu x:Key="keyContextMenu" />
     </Window.Resources>

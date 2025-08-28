@@ -28,6 +28,10 @@ namespace WOWCAU.Core.Parts.Domain.Outer.Defaults
             IUnzipHelper unzipHelper,
             IGitHubHelper gitHubHelper)
         {
+            // Increasing the HttpClient's timeout to 5min (since the "manually trigger scraping"-part could take some time)
+
+            httpClient.Timeout = TimeSpan.FromMinutes(5);
+
             // Dependency-Graph
 
             var logFile = Path.Combine(appHelper.GetApplicationExecutableFolder(), $"{appHelper.GetApplicationName()}.log");
@@ -40,8 +44,9 @@ namespace WOWCAU.Core.Parts.Domain.Outer.Defaults
             appModule = new AppModule(logger, appHelper, pluralizeHelper, configStorage, configReader, configValidator);
 
             var smartUpdateFeature = new SmartUpdateFeature(logger, reliableFileOperations);
+            var scraperApiClient = new ScraperApiClient(logger, httpClient);
             var singleAddonProcessor = new SingleAddonProcessor(curseHelper, downloadHelper, unzipHelper, smartUpdateFeature);
-            var multiAddonProcessor = new MultiAddonProcessor(logger, curseHelper, singleAddonProcessor, httpClient);
+            var multiAddonProcessor = new MultiAddonProcessor(logger, curseHelper, scraperApiClient, singleAddonProcessor);
             addonsModule = new AddonsModule(logger, appModule, smartUpdateFeature, multiAddonProcessor, fileSystemHelper, reliableFileOperations);
 
             var updateManager = new UpdateManager(reliableFileOperations, gitHubHelper, fileSystemHelper, downloadHelper, unzipHelper, appHelper);

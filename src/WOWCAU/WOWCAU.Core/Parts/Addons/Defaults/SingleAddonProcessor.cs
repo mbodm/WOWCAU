@@ -65,12 +65,13 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
             var zipFilePath = Path.Combine(downloadFolder, zipFile);
 
-            if (!await unzipHelper.ValidateZipFileAsync(zipFilePath, cancellationToken))
+            var valid = await unzipHelper.ValidateZipFileAsync(zipFilePath, cancellationToken).ConfigureAwait(false);
+            if (!valid)
             {
                 throw new InvalidOperationException($"It seems the addon zip file ('{zipFile}') is corrupted, cause zip file validation failed.");
             }
 
-            await unzipHelper.ExtractZipFileAsync(zipFilePath, unzipFolder, cancellationToken);
+            await unzipHelper.ExtractZipFileAsync(zipFilePath, unzipFolder, cancellationToken).ConfigureAwait(false);
 
             progress?.Report(new AddonProgress(AddonState.UnzipFinished, addonName, 100));
         }
