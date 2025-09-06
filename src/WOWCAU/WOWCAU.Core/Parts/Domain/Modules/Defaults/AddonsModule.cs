@@ -55,7 +55,8 @@ namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
 
             await SmartUpdateSaveAsync(cancellationToken).ConfigureAwait(false);
 
-            await MoveContentAsync(unzipFolder, targetFolder, cancellationToken).ConfigureAwait(false);
+            //await MoveContentAsync(unzipFolder, targetFolder, cancellationToken).ConfigureAwait(false);
+            await CopyContentAsync(unzipFolder, targetFolder, cancellationToken).ConfigureAwait(false);
             await CleanUpAsync(downloadFolder, unzipFolder, cancellationToken).ConfigureAwait(false);
 
             return countOfUpdatedAddons;
@@ -149,6 +150,24 @@ namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
                 logger.Log(e);
                 if (IsCancellationException(e)) throw;
                 throw new InvalidOperationException("An error occurred while moving the unzipped addons to target folder (see log file for details).");
+            }
+        }
+
+        private async Task CopyContentAsync(string unzipFolder, string targetFolder, CancellationToken cancellationToken = default)
+        {
+            await reliableFileOperations.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            // Copy everything in unzip folder to target folder
+
+            try
+            {
+                await fileSystemHelper.CopyFolderContentAsync(unzipFolder, targetFolder, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                logger.Log(e);
+                if (IsCancellationException(e)) throw;
+                throw new InvalidOperationException("An error occurred while copying the unzipped addons to target folder (see log file for details).");
             }
         }
 

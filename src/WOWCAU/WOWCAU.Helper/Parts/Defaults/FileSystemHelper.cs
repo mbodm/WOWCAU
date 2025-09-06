@@ -7,10 +7,7 @@ namespace WOWCAU.Helper.Parts.Defaults
     {
         public bool IsValidAbsolutePath(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentException($"'{nameof(path)}' cannot be null or whitespace.", nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
             try
             {
@@ -61,15 +58,8 @@ namespace WOWCAU.Helper.Parts.Defaults
 
         public bool CopyFile(string sourceFilePath, string destFilePath)
         {
-            if (string.IsNullOrWhiteSpace(sourceFilePath))
-            {
-                throw new ArgumentException($"'{nameof(sourceFilePath)}' cannot be null or whitespace.", nameof(sourceFilePath));
-            }
-
-            if (string.IsNullOrWhiteSpace(destFilePath))
-            {
-                throw new ArgumentException($"'{nameof(destFilePath)}' cannot be null or whitespace.", nameof(destFilePath));
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(sourceFilePath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(destFilePath);
 
             // Try to copy file as user, otherwise ask for admin rights and copy file as admin, if user has no write access to folder.
 
@@ -93,17 +83,62 @@ namespace WOWCAU.Helper.Parts.Defaults
             }
         }
 
-        public Task MoveFolderContentAsync(string sourceFolder, string destFolder, CancellationToken cancellationToken = default)
+        public Task CopyFolderContentAsync(string sourceFolder, string destFolder, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(sourceFolder))
+            ArgumentException.ThrowIfNullOrWhiteSpace(sourceFolder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(destFolder);
+
+            if (!Directory.Exists(sourceFolder))
             {
-                throw new ArgumentException($"'{nameof(sourceFolder)}' cannot be null or whitespace.", nameof(sourceFolder));
+                throw new InvalidOperationException("Given source folder not exists.");
             }
 
-            if (string.IsNullOrWhiteSpace(destFolder))
+            if (!Directory.Exists(destFolder))
             {
-                throw new ArgumentException($"'{nameof(destFolder)}' cannot be null or whitespace.", nameof(destFolder));
+                Directory.CreateDirectory(destFolder);
             }
+
+            sourceFolder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(sourceFolder));
+            destFolder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(destFolder));
+
+            var dirInfo = new DirectoryInfo(sourceFolder);
+            var dirNames = dirInfo.GetDirectories().Select(dir => dir.Name);
+            var fileNames = dirInfo.GetFiles().Select(file => file.Name);
+
+            if (!dirNames.Any() && !fileNames.Any())
+            {
+                return Task.CompletedTask;
+            }
+
+            foreach (var dirName in dirNames)
+            {
+                var sourceDir = Path.Combine(sourceFolder, dirName);
+                var destDir = Path.Combine(destFolder, dirName);
+
+                if (!Directory.Exists(destDir))
+                {
+                    Directory.CreateDirectory(destDir);
+                }
+            }
+
+            var fileTasks = fileNames.Select(fileName =>
+            {
+                var sourceFile = Path.Combine(sourceFolder, fileName);
+                var destFile = Path.Combine(destFolder, fileName);
+
+                // No need for a ThrowIfCancellationRequested() here, since Task.Run() cancels on its own (if the
+                // task has not already started) and since the sync method one-liner can not be cancelled anyway.
+
+                return Task.Run(() => File.Copy(sourceFile, destFile, true), cancellationToken);
+            });
+
+            return Task.WhenAll(fileTasks);
+        }
+
+        public Task MoveFolderContentAsync(string sourceFolder, string destFolder, CancellationToken cancellationToken = default)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(destFolder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(sourceFolder);
 
             if (!Directory.Exists(sourceFolder))
             {
@@ -156,10 +191,7 @@ namespace WOWCAU.Helper.Parts.Defaults
 
         public async Task DeleteFolderContentAsync(string folder, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(folder))
-            {
-                throw new ArgumentException($"'{nameof(folder)}' cannot be null or whitespace.", nameof(folder));
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(folder);
 
             if (!Directory.Exists(folder))
             {
@@ -222,10 +254,7 @@ namespace WOWCAU.Helper.Parts.Defaults
 
         public Version GetExeFileVersion(string exeFilePath)
         {
-            if (string.IsNullOrWhiteSpace(exeFilePath))
-            {
-                throw new ArgumentException($"'{nameof(exeFilePath)}' cannot be null or whitespace.", nameof(exeFilePath));
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(exeFilePath);
 
             exeFilePath = Path.GetFullPath(exeFilePath);
 

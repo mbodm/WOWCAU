@@ -17,7 +17,7 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
         private readonly ISmartUpdateFeature smartUpdateFeature = smartUpdateFeature ?? throw new ArgumentNullException(nameof(smartUpdateFeature));
 
         public async Task ProcessAddonAsync(string addonName, string downloadUrl, string downloadFolder, string unzipFolder,
-            IProgress<AddonProgress>? progress = default, CancellationToken cancellationToken = default)
+            bool extractAlways = false, IProgress<AddonProgress>? progress = default, CancellationToken cancellationToken = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(addonName);
             ArgumentException.ThrowIfNullOrWhiteSpace(downloadUrl);
@@ -42,7 +42,10 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                smartUpdateFeature.DeployZipFile(addonName);
+                if (extractAlways)
+                {
+                    smartUpdateFeature.DeployZipFile(addonName);
+                }
 
                 progress?.Report(new AddonProgress(AddonState.DownloadFinishedBySmartUpdate, addonName, 100));
             }
