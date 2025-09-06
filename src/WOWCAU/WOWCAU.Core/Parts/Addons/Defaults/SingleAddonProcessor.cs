@@ -1,13 +1,16 @@
-﻿using WOWCAU.Core.Parts.Addons.Contracts;
+﻿using System.Diagnostics;
+using WOWCAU.Core.Parts.Addons.Contracts;
 using WOWCAU.Core.Parts.Addons.Types;
+using WOWCAU.Core.Parts.Logging.Contracts;
 using WOWCAU.Helper.Parts.Contracts;
 using WOWCAU.Helper.Parts.Types;
 
 namespace WOWCAU.Core.Parts.Addons.Defaults
 {
     public sealed class SingleAddonProcessor(
-        ICurseHelper curseHelper, IDownloadHelper downloadHelper, IUnzipHelper unzipHelper, ISmartUpdateFeature smartUpdateFeature) : ISingleAddonProcessor
+        ILogger logger, ICurseHelper curseHelper, IDownloadHelper downloadHelper, IUnzipHelper unzipHelper, ISmartUpdateFeature smartUpdateFeature) : ISingleAddonProcessor
     {
+        private readonly ILogger logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly ICurseHelper curseHelper = curseHelper ?? throw new ArgumentNullException(nameof(curseHelper));
         private readonly IDownloadHelper downloadHelper = downloadHelper ?? throw new ArgumentNullException(nameof(downloadHelper));
         private readonly IUnzipHelper unzipHelper = unzipHelper ?? throw new ArgumentNullException(nameof(unzipHelper));
@@ -20,6 +23,8 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
             ArgumentException.ThrowIfNullOrWhiteSpace(downloadUrl);
             ArgumentException.ThrowIfNullOrWhiteSpace(downloadFolder);
             ArgumentException.ThrowIfNullOrWhiteSpace(unzipFolder);
+
+            logger.LogMethodEntry();
 
             // Get zip file name
 
@@ -47,12 +52,18 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
                 var filePath = Path.Combine(downloadFolder, zipFile);
 
+                logger.Log($"Start downloading zip file ({zipFile}).");
+                var swDownload = Stopwatch.StartNew();
+
                 await downloadHelper.DownloadFileAsync(downloadUrl, filePath, new Progress<DownloadProgress>(p =>
                 {
                     var percent = CalcDownloadPercent(p.ReceivedBytes, p.TotalBytes);
                     progress?.Report(new AddonProgress(AddonState.DownloadProgress, addonName, percent));
                 }),
                 cancellationToken).ConfigureAwait(false);
+
+                swDownload.Stop();
+                logger.Log($"Finished downloading zip file ({zipFile}), after {swDownload.ElapsedMilliseconds} ms.");
 
                 progress?.Report(new AddonProgress(AddonState.DownloadFinished, addonName, 100));
 
@@ -71,9 +82,17 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
                 throw new InvalidOperationException($"It seems the addon zip file ('{zipFile}') is corrupted, cause zip file validation failed.");
             }
 
+            logger.Log($"Start extracting zip file ({zipFile}).");
+            var swExtract = Stopwatch.StartNew();
+
             await unzipHelper.ExtractZipFileAsync(zipFilePath, unzipFolder, cancellationToken).ConfigureAwait(false);
 
+            swExtract.Stop();
+            logger.Log($"Finished extracting zip file ({zipFile}), after {swExtract.ElapsedMilliseconds} ms.");
+
             progress?.Report(new AddonProgress(AddonState.UnzipFinished, addonName, 100));
+
+            logger.LogMethodExit();
         }
 
         private static byte CalcDownloadPercent(uint bytesReceived, uint bytesTotal)

@@ -45,7 +45,7 @@ namespace WOWCAU.Core.Parts.Domain.Outer.Defaults
 
             var smartUpdateFeature = new SmartUpdateFeature(logger, reliableFileOperations);
             var scraperApiClient = new ScraperApiClient(logger, httpClient);
-            var singleAddonProcessor = new SingleAddonProcessor(curseHelper, downloadHelper, unzipHelper, smartUpdateFeature);
+            var singleAddonProcessor = new SingleAddonProcessor(logger, curseHelper, downloadHelper, unzipHelper, smartUpdateFeature);
             var multiAddonProcessor = new MultiAddonProcessor(logger, curseHelper, scraperApiClient, singleAddonProcessor);
             addonsModule = new AddonsModule(logger, appModule, smartUpdateFeature, multiAddonProcessor, fileSystemHelper, reliableFileOperations);
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using WOWCAU.Core.Parts.Addons.Contracts;
 using WOWCAU.Core.Parts.Addons.Types;
 using WOWCAU.Core.Parts.Logging.Contracts;
@@ -83,7 +84,11 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
                 return singleAddonProcessor.ProcessAddonAsync(addonName, downloadUrl, downloadFolder, unzipFolder, addonProgress, cancellationToken);
             });
 
+            logger.Log("Start parallel processing of all addons.");
+            var sw = Stopwatch.StartNew();
             await Task.WhenAll(tasks).ConfigureAwait(false);
+            sw.Stop();
+            logger.Log($"Finished parallel processing of all addons,  after {sw.ElapsedMilliseconds} ms.");
 
             logger.LogMethodExit();
 

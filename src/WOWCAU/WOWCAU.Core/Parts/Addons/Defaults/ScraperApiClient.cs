@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using WOWCAU.Core.Parts.Addons.Contracts;
 using WOWCAU.Core.Parts.Logging.Contracts;
 
@@ -13,6 +14,8 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
         {
             // Check if the API already has all download URLs (for given addon names)
 
+            logger.LogMethodEntry();
+
             var allDownloadUrlsDict = await GetAllDownloadUrlsFromWebScraperApiAsync(cancellationToken).ConfigureAwait(false);
             var hasAllSearchedNames = addonNames.All(allDownloadUrlsDict.ContainsKey);
 
@@ -22,6 +25,8 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
         public async Task<Dictionary<string, string>> GetDownloadUrlsFromWebScraperApiAsync(IEnumerable<string> addonNames, CancellationToken cancellationToken = default)
         {
             // Get all download URLs from API (for given addon names)
+
+            logger.LogMethodEntry();
 
             var allDownloadUrlsDict = await GetAllDownloadUrlsFromWebScraperApiAsync(cancellationToken).ConfigureAwait(false);
             var searchedEntriesOnly = allDownloadUrlsDict.Where(kvp => addonNames.Contains(kvp.Key));
@@ -33,8 +38,12 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
         {
             // Add the given addons to API
 
+            logger.LogMethodEntry();
+
             var addonsQueryParam = string.Join(',', addonNames);
             var url = $"https://mbodm-wowcam.deno.dev/add?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9&addons={addonsQueryParam}";
+
+            logger.Log($"Start Deno web scraper API request, to add addons.");
 
             return SendAddOrScrapeRequestToWebScraperApiAsync(url, addonNames, cancellationToken);
         }
@@ -43,19 +52,29 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
         {
             // Manually trigger the API to scrape all addons immediately
 
+            logger.LogMethodEntry();
+
             var url = $"https://mbodm-wowcam.deno.dev/scrape?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
+
+            logger.Log($"Start Deno web scraper API request, to scrape all addons.");
 
             return SendAddOrScrapeRequestToWebScraperApiAsync(url, addonNames, cancellationToken);
         }
 
         private async Task<Dictionary<string, string>> GetAllDownloadUrlsFromWebScraperApiAsync(CancellationToken cancellationToken = default)
         {
+            logger.Log($"Start Deno web scraper API request, to get all download urls.");
+            var sw = Stopwatch.StartNew();
+
             var url = "https://mbodm-wowcam.deno.dev/get?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
             using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
             ThrowOnBadWebScraperApiResponse(response);
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            sw.Stop();
+            logger.Log($"Finished Deno web scraper API request, after {sw.ElapsedMilliseconds} ms.");
 
             try
             {
@@ -93,11 +112,17 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
         private async Task SendAddOrScrapeRequestToWebScraperApiAsync(string url, IEnumerable<string> addonNames, CancellationToken cancellationToken = default)
         {
+            var sw = Stopwatch.StartNew();
+
             using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
             ThrowOnBadWebScraperApiResponse(response);
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            sw.Stop();
+
+            logger.Log($"Finished Deno web scraper API request, after {sw.ElapsedMilliseconds} ms.");
 
             try
             {
