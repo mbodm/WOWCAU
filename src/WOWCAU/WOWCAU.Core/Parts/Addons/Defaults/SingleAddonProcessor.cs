@@ -8,16 +8,16 @@ using WOWCAU.Helper.Parts.Types;
 namespace WOWCAU.Core.Parts.Addons.Defaults
 {
     public sealed class SingleAddonProcessor(
-        ILogger logger, ICurseHelper curseHelper, IDownloadHelper downloadHelper, IUnzipHelper unzipHelper, ISmartUpdateFeature smartUpdateFeature) : ISingleAddonProcessor
+        ILogger logger, ICurseHelper curseHelper, ISmartUpdateFeature smartUpdateFeature, IDownloadHelper downloadHelper, IUnzipHelper unzipHelper) : ISingleAddonProcessor
     {
         private readonly ILogger logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly ICurseHelper curseHelper = curseHelper ?? throw new ArgumentNullException(nameof(curseHelper));
+        private readonly ISmartUpdateFeature smartUpdateFeature = smartUpdateFeature ?? throw new ArgumentNullException(nameof(smartUpdateFeature));
         private readonly IDownloadHelper downloadHelper = downloadHelper ?? throw new ArgumentNullException(nameof(downloadHelper));
         private readonly IUnzipHelper unzipHelper = unzipHelper ?? throw new ArgumentNullException(nameof(unzipHelper));
-        private readonly ISmartUpdateFeature smartUpdateFeature = smartUpdateFeature ?? throw new ArgumentNullException(nameof(smartUpdateFeature));
 
         public async Task ProcessAddonAsync(string addonName, string downloadUrl, string downloadFolder, string unzipFolder,
-            bool extractAlways = false, IProgress<AddonProgress>? progress = default, CancellationToken cancellationToken = default)
+            IProgress<AddonProgress>? progress = default, CancellationToken cancellationToken = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(addonName);
             ArgumentException.ThrowIfNullOrWhiteSpace(downloadUrl);
@@ -36,18 +36,9 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
             // Handle SmartUpdate feature
 
-            if (smartUpdateFeature.AddonExists(addonName, downloadUrl, zipFile))
+            if (smartUpdateFeature.AddonVersionAlreadyExists(addonName, downloadUrl, zipFile))
             {
-                // Copy zip file
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (extractAlways)
-                {
-                    smartUpdateFeature.DeployZipFile(addonName);
-                }
-
-                progress?.Report(new AddonProgress(AddonState.DownloadFinishedBySmartUpdate, addonName, 100));
+                progress?.Report(new AddonProgress(AddonState.NoDownloadNeeded, addonName, 100));
             }
             else
             {
@@ -70,30 +61,32 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
                 progress?.Report(new AddonProgress(AddonState.DownloadFinished, addonName, 100));
 
-                smartUpdateFeature.AddOrUpdateAddon(addonName, downloadUrl, zipFile);
+                // Extract zip file
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var zipFilePath = Path.Combine(downloadFolder, zipFile);
+
+                var valid = await unzipHelper.ValidateZipFileAsync(zipFilePath, cancellationToken).ConfigureAwait(false);
+                if (!valid)
+                {
+                    throw new InvalidOperationException($"It seems the addon zip file ('{zipFile}') is corrupted, cause zip file validation failed.");
+                }
+
+                logger.Log($"Start extracting zip file ({zipFile}).");
+                var swExtract = Stopwatch.StartNew();
+
+                await unzipHelper.ExtractZipFileAsync(zipFilePath, unzipFolder, cancellationToken).ConfigureAwait(false);
+
+                swExtract.Stop();
+                logger.Log($"Finished extracting zip file ({zipFile}), after {swExtract.ElapsedMilliseconds} ms.");
+
+                progress?.Report(new AddonProgress(AddonState.UnzipFinished, addonName, 100));
+
+                // Add to SmartUpdate
+
+                smartUpdateFeature.AddOrUpdateAddonVersion(addonName, downloadUrl, zipFile);
             }
-
-            // Extract zip file
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var zipFilePath = Path.Combine(downloadFolder, zipFile);
-
-            var valid = await unzipHelper.ValidateZipFileAsync(zipFilePath, cancellationToken).ConfigureAwait(false);
-            if (!valid)
-            {
-                throw new InvalidOperationException($"It seems the addon zip file ('{zipFile}') is corrupted, cause zip file validation failed.");
-            }
-
-            logger.Log($"Start extracting zip file ({zipFile}).");
-            var swExtract = Stopwatch.StartNew();
-
-            await unzipHelper.ExtractZipFileAsync(zipFilePath, unzipFolder, cancellationToken).ConfigureAwait(false);
-
-            swExtract.Stop();
-            logger.Log($"Finished extracting zip file ({zipFile}), after {swExtract.ElapsedMilliseconds} ms.");
-
-            progress?.Report(new AddonProgress(AddonState.UnzipFinished, addonName, 100));
 
             logger.LogMethodExit();
         }

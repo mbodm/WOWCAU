@@ -2,9 +2,9 @@
 {
     public enum AddonState
     {
+        NoDownloadNeeded,
         DownloadProgress,
         DownloadFinished,
-        DownloadFinishedBySmartUpdate,
         UnzipFinished
     }
 }

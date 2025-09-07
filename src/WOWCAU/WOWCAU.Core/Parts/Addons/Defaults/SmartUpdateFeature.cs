@@ -5,60 +5,24 @@ using WOWCAU.Core.Parts.Addons.Contracts;
 using WOWCAU.Core.Parts.Addons.Types;
 using WOWCAU.Core.Parts.Extensions;
 using WOWCAU.Core.Parts.Logging.Contracts;
-using WOWCAU.Core.Parts.System.Contracts;
 
 namespace WOWCAU.Core.Parts.Addons.Defaults
 {
-    public sealed class SmartUpdateFeature(ILogger logger, IReliableFileOperations reliableFileOperations) : ISmartUpdateFeature
+    public sealed class SmartUpdateFeature(ILogger logger) : ISmartUpdateFeature
     {
         private readonly ILogger logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IReliableFileOperations reliableFileOperations = reliableFileOperations ?? throw new ArgumentNullException(nameof(reliableFileOperations));
 
         private readonly ConcurrentDictionary<string, SmartUpdateData> dict = new();
 
-        private string rootFolder = string.Empty;
-        private string zipFolder = string.Empty;
-        private string xmlFile = string.Empty;
-        private string addonsDownloadFolder = string.Empty;
-        private bool isInitialized = false;
-
-        public async Task InitAsync(string smartUpdateFolder, string addonsDownloadFolder, CancellationToken cancellationToken = default)
+        public async Task LoadAsync(string baseFolder, CancellationToken cancellationToken = default)
         {
-            if (isInitialized)
-            {
-                return;
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(baseFolder);
 
-            rootFolder = smartUpdateFolder;
-            zipFolder = Path.Combine(rootFolder, "PreviousDownloads");
-            xmlFile = Path.Combine(rootFolder, "SmartUpdate.xml");
-            this.addonsDownloadFolder = addonsDownloadFolder;
-
-            // It is better to check (and maybe create) the folders once at startup than checking them for every single addon knocking at the door
-
-            if (!Directory.Exists(rootFolder))
-            {
-                Directory.CreateDirectory(rootFolder);
-                await reliableFileOperations.WaitAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            if (!Directory.Exists(zipFolder))
-            {
-                Directory.CreateDirectory(zipFolder);
-                await reliableFileOperations.WaitAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            isInitialized = true;
-        }
-
-        public async Task LoadAsync(CancellationToken cancellationToken = default)
-        {
             logger.LogMethodEntry();
-
-            CheckInitialization();
 
             dict.Clear();
 
+            var xmlFile = GetXmlFile(baseFolder);
             if (!File.Exists(xmlFile))
             {
                 return;
@@ -96,12 +60,6 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
                     throw new InvalidOperationException("Error in SmartUpdate file: The <smartupdate> section contains one or more invalid entries.");
                 }
 
-                var zipFilePath = Path.Combine(zipFolder, previousZipFile);
-                if (!File.Exists(zipFilePath))
-                {
-                    throw new InvalidOperationException("Error in SmartUpdate file: The XML file and the corresponding zip folder are not in sync.");
-                }
-
                 if (!dict.TryAdd(addonName, new SmartUpdateData(addonName, previousDownloadUrl, previousZipFile, changedAt)))
                 {
                     throw new InvalidOperationException("Error in SmartUpdate file: The <smartupdate> section contains multiple entries for the same addon.");
@@ -111,11 +69,11 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
             logger.LogMethodExit();
         }
 
-        public async Task SaveAsync(CancellationToken cancellationToken = default)
+        public async Task SaveAsync(string baseFolder, CancellationToken cancellationToken = default)
         {
-            logger.LogMethodEntry();
+            ArgumentException.ThrowIfNullOrWhiteSpace(baseFolder);
 
-            CheckInitialization();
+            logger.LogMethodEntry();
 
             var entries = dict.OrderBy(kvp => kvp.Key).Select(kvp => new XElement("entry",
                 new XAttribute("addonName", kvp.Key),
@@ -125,6 +83,7 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
             var doc = new XDocument(new XElement("wowcau", new XElement("smartupdate", entries)));
 
+            var xmlFile = GetXmlFile(baseFolder);
             using var fileStream = new FileStream(xmlFile, FileMode.Create, FileAccess.Write, FileShare.Read);
             using var xmlWriter = XmlWriter.Create(fileStream, new XmlWriterSettings { Indent = true, IndentChars = "\t", NewLineOnAttributes = true, Async = true });
             await xmlWriter.FlushAsync().ConfigureAwait(false);
@@ -135,24 +94,11 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
             logger.LogMethodExit();
         }
 
-        public bool AddonExists(string addonName, string downloadUrl, string zipFile)
+        public bool AddonVersionAlreadyExists(string addonName, string downloadUrl, string zipFile)
         {
-            if (string.IsNullOrWhiteSpace(addonName))
-            {
-                throw new ArgumentException($"'{nameof(addonName)}' cannot be null or whitespace.", nameof(addonName));
-            }
-
-            if (string.IsNullOrWhiteSpace(downloadUrl))
-            {
-                throw new ArgumentException($"'{nameof(downloadUrl)}' cannot be null or whitespace.", nameof(downloadUrl));
-            }
-
-            if (string.IsNullOrWhiteSpace(zipFile))
-            {
-                throw new ArgumentException($"'{nameof(zipFile)}' cannot be null or whitespace.", nameof(zipFile));
-            }
-
-            CheckInitialization();
+            ArgumentException.ThrowIfNullOrWhiteSpace(addonName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(downloadUrl);
+            ArgumentException.ThrowIfNullOrWhiteSpace(zipFile);
 
             if (!dict.TryGetValue(addonName, out SmartUpdateData? value) || value == null)
             {
@@ -160,103 +106,26 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
             }
 
             var hasExactEntry = value.AddonName == addonName && value.DownloadUrl == downloadUrl && value.ZipFile == zipFile;
-            var zipFileExists = File.Exists(Path.Combine(zipFolder, zipFile));
 
-            return hasExactEntry && zipFileExists;
+            return hasExactEntry;
         }
 
-        public void AddOrUpdateAddon(string addonName, string downloadUrl, string zipFile)
+        public void AddOrUpdateAddonVersion(string addonName, string downloadUrl, string zipFile)
         {
-            if (string.IsNullOrWhiteSpace(addonName))
-            {
-                throw new ArgumentException($"'{nameof(addonName)}' cannot be null or whitespace.", nameof(addonName));
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(addonName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(downloadUrl);
+            ArgumentException.ThrowIfNullOrWhiteSpace(zipFile);
 
-            if (string.IsNullOrWhiteSpace(downloadUrl))
-            {
-                throw new ArgumentException($"'{nameof(downloadUrl)}' cannot be null or whitespace.", nameof(downloadUrl));
-            }
-
-            if (string.IsNullOrWhiteSpace(zipFile))
-            {
-                throw new ArgumentException($"'{nameof(zipFile)}' cannot be null or whitespace.", nameof(zipFile));
-            }
-
-            CheckInitialization();
-
-            if (AddonExists(addonName, downloadUrl, zipFile))
+            if (AddonVersionAlreadyExists(addonName, downloadUrl, zipFile))
             {
                 return;
             }
 
-            // Remove old zip file (if it's an update)
-
-            if (dict.ContainsKey(addonName))
-            {
-                if (dict.TryGetValue(addonName, out SmartUpdateData? value) && value != null && !string.IsNullOrWhiteSpace(value.ZipFile))
-                {
-                    var oldZipFile = Path.Combine(zipFolder, value.ZipFile);
-                    if (File.Exists(oldZipFile))
-                    {
-                        File.Delete(oldZipFile);
-                        // No need for some final IReliableFileOperations delay here (the zip files are independent copy operations in independent tasks and nothing immediately relies on them)
-                    }
-                }
-            }
-
-            // Add new to dict
-
             var timeStamp = DateTime.UtcNow.ToIso8601();
             var dictValue = new SmartUpdateData(addonName, downloadUrl, zipFile, timeStamp);
             dict.AddOrUpdate(addonName, dictValue, (_, _) => dictValue);
-
-            // Save new zip file
-
-            var sourcePath = Path.Combine(addonsDownloadFolder, zipFile);
-            var destPath = Path.Combine(zipFolder, zipFile);
-            File.Copy(sourcePath, destPath, true);
-            // No need for some final IReliableFileOperations delay here (the zip files are independent copy operations in independent tasks and nothing immediately relies on them)
         }
 
-        public void DeployZipFile(string addonName)
-        {
-            if (string.IsNullOrWhiteSpace(addonName))
-            {
-                throw new ArgumentException($"'{nameof(addonName)}' cannot be null or whitespace.", nameof(addonName));
-            }
-
-            CheckInitialization();
-
-            if (!dict.TryGetValue(addonName, out SmartUpdateData? value) || value == null)
-            {
-                throw new InvalidOperationException("SmartUpdate could not found an existing entry for given addon name.");
-            }
-
-            var zipFile = value.ZipFile;
-            if (string.IsNullOrWhiteSpace(zipFile))
-            {
-                throw new InvalidOperationException("SmartUpdate could not determine the zip name for given addon name.");
-            }
-
-            var zipFilePath = Path.Combine(zipFolder, zipFile);
-            if (!File.Exists(zipFilePath))
-            {
-                throw new InvalidOperationException("SmartUpdate could not found an existing zip file for given addon name.");
-            }
-
-            var sourcePath = zipFilePath;
-            var fileName = Path.GetFileName(sourcePath);
-            var destPath = Path.Combine(addonsDownloadFolder, fileName);
-            File.Copy(sourcePath, destPath, true);
-            // No need for some final IReliableFileOperations delay here (the zip files are independent copy operations in independent tasks and nothing immediately relies on them)
-        }
-
-        private void CheckInitialization()
-        {
-            if (!isInitialized)
-            {
-                throw new InvalidOperationException("SmartUpdate feature is not initialized (please initialize the feature first, by calling the appropriate method.");
-            }
-        }
+        private static string GetXmlFile(string baseFolder) => Path.Combine(baseFolder, "SmartUpdate.xml");
     }
 }

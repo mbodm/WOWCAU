@@ -69,7 +69,7 @@ namespace WOWCAU.Core.Parts.Domain.Modules.Defaults
             var settingsData = new SettingsData(
                 Options: configData.ActiveOptions,
                 WorkFolder: workFolder,
-                TempFolder: Path.Combine(workFolder, "TempFolders"),
+                TempFolder: Path.Combine(workFolder, "TempFolder"),
                 AddonUrls: configData.AddonUrls,
                 AddonTargetFolder: configData.TargetFolder);
 

@@ -43,9 +43,9 @@ namespace WOWCAU.Core.Parts.Domain.Outer.Defaults
             var configValidator = new XmlConfigValidator(logger, curseHelper, fileSystemHelper);
             appModule = new AppModule(logger, appHelper, pluralizeHelper, configStorage, configReader, configValidator);
 
-            var smartUpdateFeature = new SmartUpdateFeature(logger, reliableFileOperations);
+            var smartUpdateFeature = new SmartUpdateFeature(logger);
             var scraperApiClient = new ScraperApiClient(logger, httpClient);
-            var singleAddonProcessor = new SingleAddonProcessor(logger, curseHelper, downloadHelper, unzipHelper, smartUpdateFeature);
+            var singleAddonProcessor = new SingleAddonProcessor(logger, curseHelper, smartUpdateFeature, downloadHelper, unzipHelper);
             var multiAddonProcessor = new MultiAddonProcessor(logger, curseHelper, scraperApiClient, singleAddonProcessor);
             addonsModule = new AddonsModule(logger, appModule, smartUpdateFeature, multiAddonProcessor, fileSystemHelper, reliableFileOperations);
 

@@ -70,10 +70,10 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
                             progressData[p.AddonName] = 100; // Just to make sure download is 100%
                             Interlocked.Increment(ref updatedAddonsCounter);
                             break;
-                        case AddonState.DownloadFinishedBySmartUpdate:
-                            progressData[p.AddonName] = 100;
-                            break;
                         case AddonState.UnzipFinished:
+                            progressData[p.AddonName] = 200;
+                            break;
+                        case AddonState.NoDownloadNeeded:
                             progressData[p.AddonName] = 200;
                             break;
                     }
