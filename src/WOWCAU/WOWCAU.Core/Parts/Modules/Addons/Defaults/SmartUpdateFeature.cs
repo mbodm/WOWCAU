@@ -50,19 +50,19 @@ namespace WOWCAU.Core.Parts.Modules.Addons.Defaults
             foreach (var entry in entries)
             {
                 var addonName = entry?.Attribute("addonName")?.Value ?? string.Empty;
-                var previousDownloadUrl = entry?.Attribute("previousDownloadUrl")?.Value ?? string.Empty;
-                var previousZipFile = entry?.Attribute("previousZipFile")?.Value ?? string.Empty;
+                var downloadUrl = entry?.Attribute("downloadUrl")?.Value ?? string.Empty;
+                var zipFile = entry?.Attribute("zipFile")?.Value ?? string.Empty;
                 var changedAt = entry?.Attribute("changedAt")?.Value ?? string.Empty;
 
                 if (string.IsNullOrWhiteSpace(addonName) ||
-                    string.IsNullOrWhiteSpace(previousDownloadUrl) ||
-                    string.IsNullOrWhiteSpace(previousZipFile) ||
+                    string.IsNullOrWhiteSpace(downloadUrl) ||
+                    string.IsNullOrWhiteSpace(zipFile) ||
                     string.IsNullOrWhiteSpace(changedAt))
                 {
                     throw new InvalidOperationException("Error in SmartUpdate file: The <smartupdate> section contains one or more invalid entries.");
                 }
 
-                if (!dict.TryAdd(addonName, new SmartUpdateData(addonName, previousDownloadUrl, previousZipFile, changedAt)))
+                if (!dict.TryAdd(addonName, new SmartUpdateData(addonName, downloadUrl, zipFile, changedAt)))
                 {
                     throw new InvalidOperationException("Error in SmartUpdate file: The <smartupdate> section contains multiple entries for the same addon.");
                 }
@@ -79,8 +79,8 @@ namespace WOWCAU.Core.Parts.Modules.Addons.Defaults
 
             var entries = dict.OrderBy(kvp => kvp.Key).Select(kvp => new XElement("entry",
                 new XAttribute("addonName", kvp.Key),
-                new XAttribute("previousDownloadUrl", kvp.Value.DownloadUrl),
-                new XAttribute("previousZipFile", kvp.Value.ZipFile),
+                new XAttribute("downloadUrl", kvp.Value.DownloadUrl),
+                new XAttribute("zipFile", kvp.Value.ZipFile),
                 new XAttribute("changedAt", kvp.Value.TimeStamp)));
 
             var doc = new XDocument(new XElement("wowcau", new XElement("smartupdate", entries)));
