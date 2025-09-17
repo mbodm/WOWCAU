@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using WOWCAU.Helper.Parts.Types;
+using WOWCAU.Core.Parts.Helper.Types;
 
 namespace WOWCAU
 {
@@ -12,13 +12,12 @@ namespace WOWCAU
     {
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            domainLogic.Logger.ClearLog();
-            domainLogic.Logger.Log("Application started and log file was cleared.");
+            domainLogic.LogApplicationStart();
 
             try
             {
-                await domainLogic.Update.RemoveBakFileIfExistsAsync();
-                await domainLogic.App.LoadSettingsAsync();
+                await domainLogic.RemoveBakFileIfExistsAsync();
+                await domainLogic.LoadSettingsAsync();
             }
             catch (Exception ex)
             {
@@ -26,7 +25,7 @@ namespace WOWCAU
                 return;
             }
 
-            if (domainLogic.App.Settings.Options.Contains("autoupdate"))
+            if (domainLogic.Settings.Options.Contains("autoupdate"))
             {
                 RemoveLink(1);
                 textBlockConfigFolder.Visibility = Visibility.Visible;
@@ -41,7 +40,7 @@ namespace WOWCAU
             button.TabIndex = 0;
             button.Focus();
 
-            if (domainLogic.App.Settings.Options.Contains("autoupdate"))
+            if (domainLogic.Settings.Options.Contains("autoupdate"))
             {
                 hyperlinkCheckUpdates.RaiseEvent(new RoutedEventArgs(Hyperlink.ClickEvent));
             }
@@ -51,7 +50,7 @@ namespace WOWCAU
         {
             try
             {
-                domainLogic.App.OpenConfigFolderInExplorer();
+                domainLogic.OpenConfigFolderInExplorer();
             }
             catch (Exception ex)
             {
@@ -66,10 +65,10 @@ namespace WOWCAU
                 SetControls(false);
                 SetProgress(true, null, null, null);
 
-                var updateData = await domainLogic.Update.CheckForUpdateAsync();
+                var updateData = await domainLogic.CheckForUpdateAsync();
                 if (!updateData.UpdateAvailable)
                 {
-                    if (!domainLogic.App.Settings.Options.Contains("autoupdate"))
+                    if (!domainLogic.Settings.Options.Contains("autoupdate"))
                     {
                         ShowInfo("You already have the latest WOWCAU version.");
                     }
@@ -93,7 +92,7 @@ namespace WOWCAU
                 }
 
                 SetProgress(null, "Downloading application update", 0, null);
-                await domainLogic.Update.DownloadUpdateAsync(updateData, new Progress<DownloadProgress>(p =>
+                await domainLogic.DownloadUpdateAsync(updateData, new Progress<DownloadProgress>(p =>
                 {
                     var receivedMB = ((double)p.ReceivedBytes / 1024 / 1024).ToString("0.00", CultureInfo.InvariantCulture);
                     var totalMB = ((double)p.TotalBytes / 1024 / 1024).ToString("0.00", CultureInfo.InvariantCulture);
@@ -118,7 +117,7 @@ namespace WOWCAU
                     return;
                 }
 
-                await domainLogic.Update.ApplyUpdateAndRestartApplicationAsync();
+                await domainLogic.ApplyUpdateAndRestartApplicationAsync();
                 Application.Current.Shutdown();
             }
             catch (Exception ex)
@@ -141,15 +140,15 @@ namespace WOWCAU
                     contextMenu.Items.Clear();
 
                     var itemProgramFolder = new MenuItem { Header = "Show program folder", Icon = new TextBlock { Text = "  1" } };
-                    itemProgramFolder.Click += (s, e) => { try { domainLogic.App.OpenProgramFolderInExplorer(); } catch (Exception ex) { ShowError(ex.Message); } };
+                    itemProgramFolder.Click += (s, e) => { try { domainLogic.OpenProgramFolderInExplorer(); } catch (Exception ex) { ShowError(ex.Message); } };
                     contextMenu.Items.Add(itemProgramFolder);
 
                     var itemLogFile = new MenuItem { Header = "Show log file", Icon = new TextBlock { Text = "  2" } };
-                    itemLogFile.Click += (s, e) => { try { domainLogic.App.ShowLogFileInNotepad(); } catch (Exception ex) { ShowError(ex.Message); } };
+                    itemLogFile.Click += (s, e) => { try { domainLogic.ShowLogFileInNotepad(); } catch (Exception ex) { ShowError(ex.Message); } };
                     contextMenu.Items.Add(itemLogFile);
 
                     var itemAddonsFolder = new MenuItem { Header = "Show addons folder", Icon = new TextBlock { Text = "  3" } };
-                    itemAddonsFolder.Click += (s, e) => { try { domainLogic.App.OpenAddonsFolderInExplorer(); } catch (Exception ex) { ShowError(ex.Message); } };
+                    itemAddonsFolder.Click += (s, e) => { try { domainLogic.OpenAddonsFolderInExplorer(); } catch (Exception ex) { ShowError(ex.Message); } };
                     contextMenu.Items.Add(itemAddonsFolder);
 
                     contextMenu.IsOpen = true;
@@ -185,12 +184,12 @@ namespace WOWCAU
 
             try
             {
-                await domainLogic.App.LoadSettingsAsync(); // Reload settings
+                await domainLogic.LoadSettingsAsync(); // Reload settings
 
                 button.IsEnabled = true;
 
                 var stopwatch = Stopwatch.StartNew();
-                var updatedAddons = await domainLogic.Addons.ProcessAddonsAsync(new Progress<byte>(p => progressBar.Value = p), cts.Token);
+                var updatedAddons = await domainLogic.ProcessAddonsAsync(new Progress<byte>(p => progressBar.Value = p), cts.Token);
                 stopwatch.Stop();
 
                 button.IsEnabled = false;
@@ -204,10 +203,10 @@ namespace WOWCAU
                 // a scheduler can still produce async progress, even when Task.WhenAll() already has finished).
                 await Task.Delay(1250);
 
-                var seconds = Math.Round((double)(stopwatch.ElapsedMilliseconds + 1250) / 1000);
-                var rounded = Convert.ToUInt32(seconds);
-                var term = domainLogic.App.PluralizeAddonWord(updatedAddons);
-                var statusText = $"Successfully updated {updatedAddons} {term} in {rounded} seconds";
+                var roundedSeconds = (uint)Math.Round((double)(stopwatch.ElapsedMilliseconds + 1250) / 1000, MidpointRounding.AwayFromZero);
+                var addonsTerm = domainLogic.PluralizeWordByCount("addon", updatedAddons);
+                var secondsTerm = domainLogic.PluralizeWordByCount("second", roundedSeconds);
+                var statusText = $"Successfully updated {updatedAddons} {addonsTerm} in {roundedSeconds} {secondsTerm}";
 
                 SetProgress(null, statusText, null, null);
             }

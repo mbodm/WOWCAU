@@ -1,7 +1,6 @@
 ﻿using System.Net.Http;
 using System.Windows;
-using WOWCAU.Core.Parts.Domain.Outer.Defaults;
-using WOWCAU.Helper.Parts.Defaults;
+using WOWCAU.Core.Parts.Domain.Defaults;
 
 namespace WOWCAU
 {
@@ -18,15 +17,7 @@ namespace WOWCAU
                 return;
             }
 
-            var domainLogic = new DomainLogic(
-                httpClient,
-                new AppHelper(),
-                new PluralizeHelper(),
-                new CurseHelper(),
-                new FileSystemHelper(),
-                new DownloadHelper(httpClient),
-                new UnzipHelper(),
-                new GitHubHelper(httpClient));
+            var domainLogic = new DomainLogic(httpClient);
 
             MainWindow = new MainWindow(domainLogic);
         }

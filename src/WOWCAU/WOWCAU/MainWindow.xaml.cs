@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using WOWCAU.Core.Parts.Domain.Outer.Contracts;
+using WOWCAU.Core.Parts.Domain.Contracts;
 
 namespace WOWCAU
 {
@@ -15,7 +15,7 @@ namespace WOWCAU
 
             MinWidth = Width;
             MinHeight = Height;
-            Title = $"WOWCAU {domainLogic.App.GetApplicationVersion()}";
+            Title = $"WOWCAU {domainLogic.GetApplicationVersion()}";
 
             textBlockConfigFolder.Visibility = Visibility.Hidden;
             textBlockCheckUpdates.Visibility = Visibility.Hidden;
