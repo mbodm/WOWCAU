@@ -41,7 +41,7 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
             logger.LogMethodEntry();
 
             var addonsQueryParam = string.Join(',', addonNames);
-            var url = $"https://mbodm-wowcam.deno.dev/add?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9&addons={addonsQueryParam}";
+            var url = $"https://wowcam.mbodm.deno.net/add?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9&addons={addonsQueryParam}";
 
             logger.Log($"Start Deno web scraper API request, to add addons.");
 
@@ -54,7 +54,7 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
 
             logger.LogMethodEntry();
 
-            var url = $"https://mbodm-wowcam.deno.dev/scrape?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
+            var url = $"https://wowcam.mbodm.deno.net/scrape?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
 
             logger.Log($"Start Deno web scraper API request, to scrape all addons.");
 
@@ -66,7 +66,7 @@ namespace WOWCAU.Core.Parts.Addons.Defaults
             logger.Log($"Start Deno web scraper API request, to get all download urls.");
             var sw = Stopwatch.StartNew();
 
-            var url = "https://mbodm-wowcam.deno.dev/get?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
+            var url = "https://wowcam.mbodm.deno.net/get?token=a983a17f-17f0-4652-bcaf-5f5c29cd99e9";
             using var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
             ThrowOnBadWebScraperApiResponse(response);
